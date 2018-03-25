@@ -1,7 +1,11 @@
 #include "html_crawler.hxx"
+#include "download.hxx"
 #include "utility.hxx"
 
 #include <iostream>
+#include <iomanip>
+#include <functional>
+#include <sstream>
 #include <cctype>
 
 
@@ -27,6 +31,27 @@ inline static bool token_char(unsigned char ch) {
 }
 
 
+static void subdownload(
+    const std::string & uri,
+    size_t              line,
+    size_t              column,
+    const std::string & base_uri)
+{
+    std::stringstream filename;
+    filename
+        << "./"
+        << std::setw(8) << std::setfill('0') << line << '_'
+        << std::setw(8) << std::setfill('0') << column;
+
+    std::cerr
+        << "Downloading URI \"" << uri
+        << "\", storing as " << filename.str()
+        << std::endl;
+
+    download(uri, filename.str())();
+}
+
+
 void html_crawler::process_uri(
     const std::string & element_name,
     const std::string & attribute_name,
@@ -42,8 +67,12 @@ void html_crawler::process_uri(
         << std::endl;
 
     const auto iter_new = m_uri_set.insert(uri);
-    if (iter_new.second)
-        std::cerr << "DOWNLOAD" << std::endl;
+    if (iter_new.second) {
+        m_download_tp.run(std::bind(&subdownload,
+            uri, line, column, m_base_uri));
+
+        std::cerr << "DOWNLOAD QUEUED" << std::endl;
+    }
 }
 
 

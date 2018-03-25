@@ -7,15 +7,22 @@
 
 // Actual main implementation
 static int main_impl(int argc, char * const argv[]) {
+    const std::string base_uri("www.meetangee.com");
+
     const auto start_tstmp = std::chrono::system_clock::now();
 
     {
-        fastcrawl::download download("www.meetangee.com", "./index.html");
-        fastcrawl::html_crawler html_crawler;
+        std::chrono::time_point<std::chrono::system_clock> download_start_tstmp;
 
-        const auto download_start_tstmp = std::chrono::system_clock::now();
+        {
+            // Initialisation
+            fastcrawl::download download(base_uri, "./index.html");
+            fastcrawl::html_crawler html_crawler(base_uri);
 
-        download(html_crawler);
+            download_start_tstmp = std::chrono::system_clock::now();
+
+            download(html_crawler);  // crawl
+        }
 
         std::chrono::duration<double> download_time_s =
             std::chrono::system_clock::now() - download_start_tstmp;

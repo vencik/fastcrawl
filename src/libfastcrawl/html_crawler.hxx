@@ -2,11 +2,13 @@
 #define fastcrawl__html_crawler_hxx
 
 #include "online_data_processor.hxx"
+#include "thread_pool.hxx"
 
 #include <unordered_map>
 #include <unordered_set>
 #include <iostream>
 #include <cassert>
+#include <cstdint>
 
 
 namespace fastcrawl {
@@ -146,6 +148,8 @@ class html_crawler: public online_data_processor {
 
     static const attribute_map s_attribute_map;
 
+    const std::string m_base_uri;
+
     // Position in content
     size_t m_read_cnt;
     size_t m_line;
@@ -160,16 +164,24 @@ class html_crawler: public online_data_processor {
     // URI set
     std::unordered_set<std::string> m_uri_set;
 
+    // Downloads
+    thread_pool m_download_tp;
+
     public:
 
-    html_crawler():
+    html_crawler(
+        const std::string & base_uri,
+        size_t parallel_download_limit = SIZE_MAX)
+    :
+        m_base_uri(base_uri),
         m_read_cnt(0),
         m_line(1),
         m_column(0),
         m_doc(*this),
         m_tag(*this),
         m_element_attr(*this),
-        m_current_node(&m_doc)
+        m_current_node(&m_doc),
+        m_download_tp(20, parallel_download_limit)
     {}
 
     void operator () (unsigned char * data, size_t size);

@@ -39,6 +39,7 @@ add_subdirectory(libfastcrawl)
 # fastcrawl CLI
 add_executable(fcrawl fcrawl.cxx)
 target_link_libraries(fcrawl
+    LINK_PUBLIC pthread
     LINK_PUBLIC fastcrawl
     LINK_PUBLIC curl)
     #LINK_PUBLIC zlib)
