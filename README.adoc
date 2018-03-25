@@ -1,0 +1,11 @@
+FastCrawl
+=========
+
+Installation
+------------
+
+Dependencis
+~~~~~~~~~~~
+
+* CURL (libcurl4-openssl-dev on Debian)
+* ZLib (zlib1g-dev on Debian)

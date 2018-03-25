@@ -1,0 +1,8 @@
+#ifndef fastcrawl_config_hxx
+#define fastcrawl_config_hxx
+
+#define FASTCRAWL_VERSION_MAJOR @FASTCRAWL_VERSION_MAJOR@
+#define FASTCRAWL_VERSION_MINOR @FASTCRAWL_VERSION_MINOR@
+#define FASTCRAWL_VERSION_PATCH @FASTCRAWL_VERSION_PATCH@
+
+#endif  // end of #ifndef fastcrawl_config_hxx
