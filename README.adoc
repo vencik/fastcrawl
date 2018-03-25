@@ -9,3 +9,15 @@ Dependencis
 
 * CURL (libcurl4-openssl-dev on Debian)
 * ZLib (zlib1g-dev on Debian)
+
+
+License
+-------
+
+The software is available under the terms of the BSD 3-clause license.
+
+
+Author
+------
+
+Václav Krpec  <vencik@razdva.cz>
