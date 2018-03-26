@@ -1,6 +1,7 @@
 #include "html_crawler.hxx"
 #include "download.hxx"
 #include "utility.hxx"
+#include "uri.hxx"
 
 #include <iostream>
 #include <iomanip>
@@ -32,46 +33,66 @@ inline static bool token_char(unsigned char ch) {
 
 
 void html_crawler::download(
-    const std::string & uri,
-    size_t              line,
-    size_t              column)
+    const std::string &        uri_str,
+    size_t                     line,
+    size_t                     column,
+    html_crawler::uri_record & record)
 {
-    std::stringstream filename;
-    filename
+    std::stringstream filename_ss; filename_ss
         << "./"
         << std::setw(8) << std::setfill('0') << line << '_'
         << std::setw(8) << std::setfill('0') << column;
 
-    std::cerr
-        << "Downloading URI \"" << uri
-        << "\", storing as " << filename.str()
-        << std::endl;
+    record.filename = filename_ss.str();
 
-    fastcrawl::download(uri, filename.str(), m_host)();
+    auto uri = uri::parse(uri_str);
+    if (uri.host.empty()) uri.host = m_host;  // fix relative URIs
+
+    fastcrawl::adler32  a32(record.adler32);
+    fastcrawl::download dl(uri, filename_ss.str());
+
+    record.success = dl(a32);  // sub-download with Adler32 checksum
 }
 
 
 void html_crawler::process_uri(
     const std::string & element_name,
     const std::string & attribute_name,
-    const std::string & uri,
+    const std::string & uri_str,
     size_t              line,
     size_t              column)
 {
-    std::cerr
-        << "Element "      << element_name
-        << " attribute "   << attribute_name
-        << " URI: \""      << uri << "\""
-        << " at position " << line  << ":" << column
-        << std::endl;
+    VLOG
+       << "Element "      << element_name
+       << " attribute "   << attribute_name
+       << " URI: \""      << uri_str << "\""
+       << " at position " << line  << ":" << column
+       << std::endl;
 
-    const auto iter_new = m_uri_set.insert(uri);
+    // Ommit local fragment ref
+    if (!uri_str.empty() && '#' == uri_str[0]) return;
+
+    const auto iter_new = m_uri_records.emplace(uri_str, uri_record());
     if (iter_new.second) {
-        m_download_tp.run(std::bind(&html_crawler::download, this,
-            uri, line, column));
-
-        std::cerr << "DOWNLOAD QUEUED" << std::endl;
+        m_download_tp.run(std::bind(&html_crawler::download,
+            this, uri_str, line, column, std::ref(iter_new.first->second)));
     }
+}
+
+
+void html_crawler::report() const {
+    const auto cout_flags = std::cout.flags();
+
+    for (auto & uri_record: m_uri_records)
+        std::cout
+            << "URI \"" << uri_record.first
+            << "\" stored in " << uri_record.second.filename
+            << ", Adler32 checksum: "
+            << std::hex << std::setw(8) << std::setfill('0')
+            << uri_record.second.adler32
+            << std::endl;
+
+    std::cout.flags(cout_flags);
 }
 
 

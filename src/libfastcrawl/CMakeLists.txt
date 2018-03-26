@@ -3,4 +3,5 @@ add_library(fastcrawl
     html_crawler.cxx
     thread_pool.cxx
     uri.cxx
+    adler32.cxx
 )

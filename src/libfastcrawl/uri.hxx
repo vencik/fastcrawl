@@ -18,7 +18,7 @@ class uri {
     std::string scheme;
     std::string user;
     std::string password;
-    std::string authority;
+    std::string host;
     uint16_t    port;
     std::string path;
     std::string query;
@@ -31,7 +31,7 @@ class uri {
     uri(const std::string & scheme_,
         const std::string & user_,
         const std::string & password_,
-        const std::string & authority_,
+        const std::string & host_,
         uint16_t            port_,
         const std::string & path_,
         const std::string & query_,
@@ -40,7 +40,7 @@ class uri {
         scheme(scheme_),
         user(user_),
         password(password_),
-        authority(authority_),
+        host(host_),
         port(port_),
         path(path_),
         query(query_),

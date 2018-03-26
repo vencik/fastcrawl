@@ -4,6 +4,7 @@
 #include "config.hxx"
 #include "download.hxx"
 #include "html_crawler.hxx"
+#include "uri.hxx"
 
 
 #endif  // end of #ifndef fastcrawl_hxx

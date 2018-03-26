@@ -3,9 +3,10 @@
 
 #include "online_data_processor.hxx"
 #include "thread_pool.hxx"
+#include "adler32.hxx"
+#include "logger.hxx"
 
 #include <unordered_map>
-#include <unordered_set>
 #include <iostream>
 #include <cassert>
 #include <cstdint>
@@ -13,8 +14,22 @@
 
 namespace fastcrawl {
 
-class html_crawler: public online_data_processor {
+class html_crawler: public online_data_processor, public logger {
     private:
+
+    struct uri_record {
+        std::string filename;
+        uint32_t    adler32;
+        bool        success;
+
+        uri_record():
+            adler32(0),
+            success(false)
+        {}
+
+    };  // end of struct uri_record
+
+    using uri_records_t = std::unordered_map<std::string, uri_record>;
 
     class attribute_map: public std::unordered_map<std::string, std::string> {
         public:
@@ -161,8 +176,8 @@ class html_crawler: public online_data_processor {
     html_element_attribute   m_element_attr;
     html_node              * m_current_node;
 
-    // URI set
-    std::unordered_set<std::string> m_uri_set;
+    // URI records
+    uri_records_t m_uri_records;
 
     // Downloads
     thread_pool m_download_tp;
@@ -186,6 +201,10 @@ class html_crawler: public online_data_processor {
 
     void operator () (unsigned char * data, size_t size);
 
+    void wait() { m_download_tp.shutdown(); }
+
+    void report() const;
+
     private:
 
     void update_position(unsigned char ch) {
@@ -199,14 +218,15 @@ class html_crawler: public online_data_processor {
     }
 
     void download(
-        const std::string & uri,
+        const std::string & uri_str,
         size_t              line,
-        size_t              column);
+        size_t              column,
+        uri_record &        record);
 
     void process_uri(
         const std::string & element_name,
         const std::string & attribute_name,
-        const std::string & uri,
+        const std::string & uri_str,
         size_t              line,
         size_t              column);
 

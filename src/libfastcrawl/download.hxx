@@ -2,6 +2,8 @@
 #define fastcrawl__download_hxx
 
 #include "online_data_processor.hxx"
+#include "uri.hxx"
+#include "logger.hxx"
 
 #include <string>
 #include <list>
@@ -10,31 +12,20 @@
 
 namespace fastcrawl {
 
-class download {
+class download: public logger {
     private:
 
-    const std::string m_uri;
+    const uri         m_uri;
     const std::string m_filename;
-    const std::string m_host;
 
     public:
 
     download(
-        const std::string & uri,
+        const uri &         uri_,
         const std::string & filename)
     :
-        m_uri(uri),
+        m_uri(uri_),
         m_filename(filename)
-    {}
-
-    download(
-        const std::string & uri,
-        const std::string & filename,
-        const std::string & host)
-    :
-        m_uri(uri),
-        m_filename(filename),
-        m_host(host)
     {}
 
     bool operator () () const { return run(nullptr); }

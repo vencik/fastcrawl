@@ -3,35 +3,105 @@
 #include <iostream>
 #include <chrono>
 #include <exception>
+#include <stdexcept>
+
+extern "C" {
+#include <getopt.h>
+}
 
 
 // Actual main implementation
 static int main_impl(int argc, char * const argv[]) {
-    const std::string base_uri("www.meetangee.com");
-
+    // Startup timestamp
     const auto start_tstmp = std::chrono::system_clock::now();
 
+    // Options & arguments
+    bool        verbose = false;
+    std::string uri_str = "www.meetangee.com";
+
+    // Usage
+    auto usage = [&argv, &uri_str](std::ostream & out) {
+        out << "Usage: " << argv[0] << " [OPTIONS] [URI]" << std::endl
+            << std::endl
+            << "OPTIONS:" << std::endl
+            << "    -h, --help           show help and exit"        << std::endl
+            << "    -v, --verbose        verbose logging to stderr" << std::endl
+            << std::endl
+            << "Default URI: " << uri_str << std::endl
+            << std::endl;
+    };
+
+    // Options handling
+    static const struct option long_opts[] {
+        { "help",       no_argument,    nullptr, 'h' },
+        { "verbose",    no_argument,    nullptr, 'v' },
+
+        { nullptr,      0,              nullptr, '\0' }  // terminator
+    };
+
+    for (;;) {
+        int long_opt_ix;
+        int opt = getopt_long(argc, argv, "hv", long_opts, &long_opt_ix);
+        if (-1 == opt) break;  // no more options
+
+        switch (opt) {
+            case 'h':   // help
+                usage(std::cout);
+                return 0;
+
+            case 'v':   // verbose logging
+                verbose = true;
+                break;
+
+            default:    // internal error (option handing faulty)
+                throw std::logic_error("INTERNAL ERROR: option handling fault");
+        }
+    }
+
+    // URI argument
+    if (optind < argc) uri_str = argv[optind++];
+
+    // Unexpected argument
+    if (optind < argc) {
+        std::cerr
+            << "Unexpected argument: " << argv[optind] << std::endl
+            << std::endl;
+
+        usage(std::cerr);
+        return 1;
+    }
+
+    // Download (nested scope forcing destructors execution before timestamp)
     {
-        std::chrono::time_point<std::chrono::system_clock> download_start_tstmp;
+        // Initialisation
+        const auto uri = fastcrawl::uri::parse(uri_str);
 
-        {
-            // Initialisation
-            fastcrawl::download download(base_uri, "./index.html");
-            fastcrawl::html_crawler html_crawler(base_uri);
+        fastcrawl::download     download(uri, "./index.html");
+        fastcrawl::html_crawler html_crawler(uri.host);
 
-            download_start_tstmp = std::chrono::system_clock::now();
-
-            download(html_crawler);  // crawl
+        if (verbose) {
+            download.verbose_log();
+            html_crawler.verbose_log();
         }
 
+        // Download startup timestamp
+        const auto download_start_tstmp = std::chrono::system_clock::now();
+
+        download(html_crawler);  // crawl the index page during download
+        html_crawler.wait();     // wait for all refs to be downloaded
+
+        // Download duration
         std::chrono::duration<double> download_time_s =
             std::chrono::system_clock::now() - download_start_tstmp;
+
+        html_crawler.report();   // report the result
 
         std::cout
             << "Total download time: " << download_time_s.count() << " s"
             << std::endl;
     }
 
+    // Runtime duration
     std::chrono::duration<double> run_time_s =
         std::chrono::system_clock::now() - start_tstmp;
 

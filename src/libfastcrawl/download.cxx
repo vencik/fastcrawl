@@ -17,12 +17,6 @@ struct curl_userdata {
 };  // end of struct curl_userdata
 
 
-static bool schemeless(const std::string & uri) {
-    const auto scheme_size = uri.find("://");
-    return std::string::npos == scheme_size;
-}
-
-
 static size_t curl_write(
     void * ptr,
     size_t size,
@@ -48,26 +42,15 @@ bool download::run(online_data_processor * processor) const {
     if (nullptr == file) return false;
     run_at_eos([file]() { std::fclose(file); });
 
-    std::cerr
-        << "Downloading URI \"" << m_uri
-        << "\", Host: " << m_host
-        << std::endl;
-
-    const bool no_scheme = schemeless(m_uri);
-
     // Prepare URI
-    if (no_scheme) {
-        ::curl_easy_setopt(curl, CURLOPT_URL, (m_host + m_uri).c_str());
-    }
-    else
-        ::curl_easy_setopt(curl, CURLOPT_URL, m_uri.c_str());
+    std::string uri_str = m_uri;
+    ::curl_easy_setopt(curl, CURLOPT_URL, uri_str.c_str());
 
     // Prepare headers
     struct ::curl_slist * headers = nullptr;
     run_at_eos([headers]() { if (headers) ::curl_slist_free_all(headers); });
 
-    if (no_scheme && !m_host.empty())
-        headers = ::curl_slist_append(headers, ("Host: " + m_host).c_str());
+    headers = ::curl_slist_append(headers, ("Host: " + m_uri.host).c_str());
 
     if (nullptr != headers)
         ::curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
@@ -88,14 +71,27 @@ bool download::run(online_data_processor * processor) const {
     }
 
     // Run download
-    const auto curl_res = ::curl_easy_perform(curl);
-
-    std::cerr
-        << "Download result: " << curl_res
-        << ": " << curl_easy_strerror(curl_res)
+    VLOG
+        << "Downloading URI \"" << uri_str
+        << "\", Host: \"" << m_uri.host
+        << "\", storing as " << m_filename
         << std::endl;
 
-    return CURLE_OK == curl_res;
+    const auto curl_res = ::curl_easy_perform(curl);
+
+    if (CURLE_OK != curl_res) {
+        LOG
+            << "Download FAILED: URI \"" << uri_str
+            << "\", Host: \"" << m_uri.host
+            << "\" (stored as " << m_filename
+            << "): " << curl_res
+            << ": " << curl_easy_strerror(curl_res)
+            << std::endl;
+
+        return false;
+    }
+
+    return true;  // all OK :-)
 };
 
 }  // end of namespace fastcrawl
