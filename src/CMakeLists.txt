@@ -35,6 +35,7 @@ include_directories("${PROJECT_BINARY_DIR}/libfastcrawl")
 
 # fastcrawl library
 add_subdirectory(libfastcrawl)
+add_subdirectory(unit_test)
 
 # fastcrawl CLI
 add_executable(fcrawl fcrawl.cxx)
