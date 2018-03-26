@@ -148,7 +148,7 @@ class html_crawler: public online_data_processor {
 
     static const attribute_map s_attribute_map;
 
-    const std::string m_base_uri;
+    const std::string m_host;
 
     // Position in content
     size_t m_read_cnt;
@@ -170,10 +170,10 @@ class html_crawler: public online_data_processor {
     public:
 
     html_crawler(
-        const std::string & base_uri,
-        size_t parallel_download_limit = SIZE_MAX)
+        const std::string & host,
+        size_t              parallel_download_limit = SIZE_MAX)
     :
-        m_base_uri(base_uri),
+        m_host(host),
         m_read_cnt(0),
         m_line(1),
         m_column(0),
@@ -197,6 +197,11 @@ class html_crawler: public online_data_processor {
 
         ++m_read_cnt;
     }
+
+    void download(
+        const std::string & uri,
+        size_t              line,
+        size_t              column);
 
     void process_uri(
         const std::string & element_name,

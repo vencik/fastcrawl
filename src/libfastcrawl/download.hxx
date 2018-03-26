@@ -15,6 +15,7 @@ class download {
 
     const std::string m_uri;
     const std::string m_filename;
+    const std::string m_host;
 
     public:
 
@@ -24,6 +25,16 @@ class download {
     :
         m_uri(uri),
         m_filename(filename)
+    {}
+
+    download(
+        const std::string & uri,
+        const std::string & filename,
+        const std::string & host)
+    :
+        m_uri(uri),
+        m_filename(filename),
+        m_host(host)
     {}
 
     bool operator () () const { return run(nullptr); }

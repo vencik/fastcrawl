@@ -31,11 +31,10 @@ inline static bool token_char(unsigned char ch) {
 }
 
 
-static void subdownload(
+void html_crawler::download(
     const std::string & uri,
     size_t              line,
-    size_t              column,
-    const std::string & base_uri)
+    size_t              column)
 {
     std::stringstream filename;
     filename
@@ -48,7 +47,7 @@ static void subdownload(
         << "\", storing as " << filename.str()
         << std::endl;
 
-    download(uri, filename.str())();
+    fastcrawl::download(uri, filename.str(), m_host)();
 }
 
 
@@ -68,8 +67,8 @@ void html_crawler::process_uri(
 
     const auto iter_new = m_uri_set.insert(uri);
     if (iter_new.second) {
-        m_download_tp.run(std::bind(&subdownload,
-            uri, line, column, m_base_uri));
+        m_download_tp.run(std::bind(&html_crawler::download, this,
+            uri, line, column));
 
         std::cerr << "DOWNLOAD QUEUED" << std::endl;
     }
