@@ -11,7 +11,7 @@ Also, Adler32 checksums of the content is computed.
 
 The project uses cURL for HTTP and Zlib for Adler32 checksum.
 
-the project doesn't use any XML or HTML parser; instead, a simple
+The project doesn't use any XML or HTML parser; instead, a simple
 HTML doc|tag|attribute segmenter was developed, optimised for speed.
 It's by no means a fully-fledged XML/HTML parser; it's only purpose is
 to find attributes of elements that contain content URI references.
