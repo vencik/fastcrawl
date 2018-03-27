@@ -24,10 +24,14 @@ static int main_impl(int argc, char * const argv[]) {
         out << "Usage: " << argv[0] << " [OPTIONS] [URI]" << std::endl
             << std::endl
             << "OPTIONS:" << std::endl
-            << "    -h, --help           show help and exit"        << std::endl
+            << "    -h, --help           show this help and exit"   << std::endl
             << "    -v, --verbose        verbose logging to stderr" << std::endl
             << std::endl
             << "Default URI: " << uri_str << std::endl
+            << std::endl
+            << "Note that the content is downloaded into the current directory" << std::endl
+            << "As the amount of files may be substantial, consider chaning"    << std::endl
+            << "to a new directory before running this."                        << std::endl
             << std::endl;
     };
 

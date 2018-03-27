@@ -19,7 +19,6 @@ set(CMAKE_CXX_FLAGS "-g -Wall -Werror -O2 ${CMAKE_CXX_FLAGS} ${CXXFLAGS}")
 
 # Dependencies
 find_library(PTHREAD NAMES pthread REQUIRED)
-find_library(RT NAMES rt REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
 
@@ -42,5 +41,5 @@ add_executable(fcrawl fcrawl.cxx)
 target_link_libraries(fcrawl
     LINK_PUBLIC pthread
     LINK_PUBLIC fastcrawl
-    LINK_PUBLIC curl)
-    #LINK_PUBLIC zlib)
+    LINK_PUBLIC curl
+    LINK_PUBLIC z)

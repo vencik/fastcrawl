@@ -5,17 +5,17 @@
 
 #include <cstdint>
 
+extern "C" {
+#include <zlib.h>
+}
+
 
 namespace fastcrawl {
 
 class adler32: public online_data_processor {
-    public:
-
-    using checksum_t = unsigned;
-
     private:
 
-    checksum_t m_checksum;
+    ::uLong    m_checksum;
     uint32_t & m_result;
 
     public:
@@ -24,9 +24,7 @@ class adler32: public online_data_processor {
 
     void operator () (unsigned char * data, size_t size);
 
-    ~adler32() {
-        m_result = m_checksum;
-    }
+    ~adler32() { m_result = m_checksum; }
 
 };  // end of class adler32
 

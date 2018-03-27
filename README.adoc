@@ -1,14 +1,65 @@
 FastCrawl
 =========
 
-Installation
-------------
+Overview
+--------
+
+This is a PoC HTML crawler.
+The task specification is to download an HTML page and all content
+it references, as fast as possible (i.e. in parallel).
+Also, Adler32 checksums of the content is computed.
+
+The project uses cURL for HTTP and Zlib for Adler32 checksum.
+
+the project doesn't use any XML or HTML parser; instead, a simple
+HTML doc|tag|attribute segmenter was developed, optimised for speed.
+It's by no means a fully-fledged XML/HTML parser; it's only purpose is
+to find attributes of elements that contain content URI references.
+
+The HTML page is processed online (as its data chunks are received).
+Therefore, the referenced content downloads (may) begin even before the whole
+HTML page is downloaded.
+The downloads are done by separate threads which are pooled.
+If the thread pool is exhausted, new treads are added automatically.
+
+
+Disclaimer
+----------
+
+Note that it's all work-in-progress.
+
+
+Build
+-----
+
+The build is CMake-based; you will need `cmake` and `make`.
+
 
 Dependencis
 ~~~~~~~~~~~
 
-* CURL (libcurl4-openssl-dev on Debian)
-* ZLib (zlib1g-dev on Debian)
+* CURL (`libcurl4-openssl-dev` package on Debian)
+* ZLib (`zlib1g-dev` pckage on Debian)
+
+
+After installing the dependencies, the `build.sh` will build the project.
+
+By default, it'll use `./build` building directory.
+* `build/fcrawl` is the crawler CLI
+* `build/libfastcrawl` contains the library
+
+By default, dynamic library is built.
+The build script accepts `-s` or `--static-libs` option to build static
+library instead.
+
+See `$ ./build.sh -h` for all options.
+
+
+Installation
+~~~~~~~~~~~~
+
+Installation is not implemented so far; the project is a mere PoC.
+You could just copy the binaries to correct FHS paths...
 
 
 License

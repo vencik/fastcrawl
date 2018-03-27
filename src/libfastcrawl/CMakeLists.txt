@@ -5,3 +5,7 @@ add_library(fastcrawl
     uri.cxx
     adler32.cxx
 )
+target_link_libraries(fastcrawl
+    LINK_PUBLIC pthread
+    LINK_PUBLIC curl
+    LINK_PUBLIC z)
