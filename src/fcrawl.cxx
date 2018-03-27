@@ -79,10 +79,9 @@ static int main_impl(int argc, char * const argv[]) {
         fastcrawl::download     download(uri, "./index.html");
         fastcrawl::html_crawler html_crawler(uri.host);
 
-        if (verbose) {
-            download.verbose_log();
-            html_crawler.verbose_log();
-        }
+        // Set logging
+        download.verbose_log(verbose);
+        html_crawler.verbose_log(verbose);
 
         // Download startup timestamp
         const auto download_start_tstmp = std::chrono::system_clock::now();

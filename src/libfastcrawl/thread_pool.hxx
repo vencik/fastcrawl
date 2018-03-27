@@ -24,6 +24,7 @@ class thread_pool {
 
     const size_t                    m_tmin;
     const size_t                    m_tmax;
+    size_t                          m_tbusy;
     bool                            m_shutdown;
     thread_list_t                   m_thread_list;
     job_queue_t                     m_job_queue;
@@ -39,6 +40,7 @@ class thread_pool {
     :
         m_tmin(tmin),
         m_tmax(tmax),
+        m_tbusy(0),
         m_shutdown(false)
     {
         start_thread(m_tmin);
@@ -50,6 +52,11 @@ class thread_pool {
     }
 
     size_t size(size_t);
+
+    size_t busy() const {
+        std::lock_guard<std::mutex> job_queue_lock(m_job_queue_mutex);
+        return m_tbusy;
+    }
 
     size_t start_thread(size_t tcnt = 1) {
         std::lock_guard<std::mutex> thread_list_lock(m_thread_list_mutex);
@@ -64,7 +71,7 @@ class thread_pool {
 
     private:
 
-    size_t start_thread_impl(size_t tcnt);
+    size_t start_thread_impl(size_t tcnt = 1);
 
     void routine();
 

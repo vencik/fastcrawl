@@ -51,6 +51,8 @@ void html_crawler::download(
     fastcrawl::adler32  a32(record.adler32);
     fastcrawl::download dl(uri, filename_ss.str());
 
+    dl.verbose_log(verbose_log());  // set logging
+
     record.success = dl(a32);  // sub-download with Adler32 checksum
 }
 

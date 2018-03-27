@@ -17,13 +17,24 @@ size_t thread_pool::size(size_t thread_cnt) {
 
 
 bool thread_pool::run(thread_pool::job_t job) {
-    std::lock_guard<std::mutex> job_queue_lock(m_job_queue_mutex);
+    size_t tbusy;
 
-    if (m_shutdown) return false;  // no more jobs accepted
+    {
+        std::lock_guard<std::mutex> job_queue_lock(m_job_queue_mutex);
 
-    // Push job to job queue
-    m_job_queue.push(job);
-    m_job_ready.notify_one();
+        if (m_shutdown) return false;  // no more jobs accepted
+
+        // Push job to job queue
+        m_job_queue.push(job);
+        m_job_ready.notify_one();
+
+        tbusy = m_tbusy;
+    }
+
+    // Check if another tread should be started
+    std::lock_guard<std::mutex> thread_list_lock(m_thread_list_mutex);
+    if (m_thread_list.size() == tbusy) start_thread_impl();
+
     return true;
 }
 
@@ -72,10 +83,15 @@ void thread_pool::routine() {
             auto job = m_job_queue.front();
             m_job_queue.pop();
 
+            ++m_tbusy;
             job_queue_lock.unlock();
-            run_at_eos([&job_queue_lock]() { job_queue_lock.lock(); });
 
-            job();
+            run_at_eos(([this, &job_queue_lock]() {
+                job_queue_lock.lock();
+                --m_tbusy;
+            }));
+
+            job();  // run job
         }
 
         if (m_shutdown) break;  // shutdown was signalised while executing jobs

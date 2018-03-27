@@ -21,7 +21,9 @@ class logger {
 
     logger(): m_vlog(false) {}
 
-    void verbose_log(bool verbose = true) { m_vlog = verbose; }
+    bool verbose_log() const { return m_vlog; }
+
+    void verbose_log(bool verbose) { m_vlog = verbose; }
 
 };  // end of class logger
 
