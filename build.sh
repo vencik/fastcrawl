@@ -4,6 +4,7 @@
 enable_ut="yes"     # Unit tests enabled
 build_type="Debug"  # Build type
 static_libs="no"    # Build static libraries
+build_doc="no"      # Build code documentation
 
 
 usage() {
@@ -29,6 +30,7 @@ OPTIONS:
     -C or --cxx-flags <flags>   Add custom compiler flags (note that
                                 the build script also honours CXXFLAGS
                                 environment variable content)
+          --documentation       Build code documentation
 
 Buildchain parameters are forwarded to underlying buildchain.
 Use it e.g. to pass parameters such like -j to make...
@@ -59,7 +61,7 @@ args=$(
     getopt \
         -n "$0" \
         -o hb:t:drscuUDC: \
-        --long help,build-dir:,build-type:,build-debug,build-release,static-libs,clean,enable-ut,disable-ut,devel,cxx-flags: \
+        --long help,build-dir:,build-type:,build-debug,build-release,static-libs,clean,enable-ut,disable-ut,devel,cxx-flags:,documentation \
         -- "$@" \
     || (echo >&2; usage >&2; exit 1)
 )
@@ -113,6 +115,10 @@ while true; do
 
         -C|--cxx-flags)
             cxx_flags="$cxx_flags $2"; shift; shift
+            ;;
+
+        --documentation)
+            build_doc="yes"; shift
             ;;
 
         --) shift; break
@@ -169,6 +175,22 @@ test "$devel_mode" = "yes" && exit 0  # skip the rest in devel mode
 
 # Unit testing
 test "$enable_ut" = "yes" && make test
+
+
+# Code documentation
+if test "$build_doc" = "yes"; then
+    cd "$project_dir"
+    echo
+
+    if ! which doxygen >/dev/null; then
+        echo_colour red "Code documentation can't be built, please install doxygen"
+        exit 1
+    else
+        echo_colour cyan "Building code documentation"
+        mkdir -p doc/src
+        doxygen ./Doxyfile
+    fi
+fi
 
 
 # All done
