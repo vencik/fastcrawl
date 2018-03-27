@@ -26,7 +26,7 @@ Scalability considerations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The crawler uses simple thread-per-connection model.
-That should be enoug for such a PoC.
+That should be enough for such a PoC.
 However, as the amount of referenced content may be rather large,
 using async. socket polling might be worth consideration.
 Note that socket polling may have an impact on the speed, though.
@@ -50,11 +50,11 @@ Obviously, you will need a C++ compiler, notably one supporting
 ISO standard 2014.
 
 
-Dependencis
-~~~~~~~~~~~
+Dependencies
+~~~~~~~~~~~~
 
 * CURL (`libcurl4-openssl-dev` package on Debian)
-* ZLib (`zlib1g-dev` pckage on Debian)
+* ZLib (`zlib1g-dev` package on Debian)
 
 
 After installing the dependencies, the `build.sh` will build the project.
@@ -64,7 +64,7 @@ By default, it'll use `./build` building directory.
 * `build/fcrawl` is the crawler CLI
 * `build/libfastcrawl` contains the library
 
-By default, dynamic library is built.
+By default, shared library is built.
 The build script accepts `-s` or `--static-libs` option to build static
 library instead.
 
