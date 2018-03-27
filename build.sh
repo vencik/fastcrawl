@@ -184,6 +184,7 @@ if test "$build_doc" = "yes"; then
 
     if ! which doxygen >/dev/null; then
         echo_colour red "Code documentation can't be built, please install doxygen"
+        echo
         exit 1
     else
         echo_colour cyan "Building code documentation"

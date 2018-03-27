@@ -46,6 +46,8 @@ Build
 -----
 
 The build is CMake-based; you will need `cmake` and `make`.
+Obviously, you will need a C++ compiler, notably one supporting
+ISO standard 2014.
 
 
 Dependencis
