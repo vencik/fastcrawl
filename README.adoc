@@ -22,6 +22,19 @@ HTML page is downloaded.
 The downloads are done by separate threads which are pooled.
 If the thread pool is exhausted, new treads are added automatically.
 
+Scalability considerations
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The crawler uses simple thread-per-connection model.
+That should be enoug for such a PoC.
+However, as the amount of referenced content may be rather large,
+using async. socket polling might be worth consideration.
+Note that socket polling may have an impact on the speed, though.
+
+Also note that as per HTTP/1.1 RFC, a single client should not maintain
+too many parallel connections to a given server.
+The crawler CLI has an option to limit the number of worker threads.
+
 
 Disclaimer
 ----------

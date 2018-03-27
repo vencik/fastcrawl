@@ -4,6 +4,7 @@
 #include <chrono>
 #include <exception>
 #include <stdexcept>
+#include <cstdint>
 
 extern "C" {
 #include <getopt.h>
@@ -17,6 +18,7 @@ static int main_impl(int argc, char * const argv[]) {
 
     // Options & arguments
     bool        verbose = false;
+    size_t      tlimit  = SIZE_MAX;
     std::string uri_str = "www.meetangee.com";
 
     // Usage
@@ -24,8 +26,9 @@ static int main_impl(int argc, char * const argv[]) {
         out << "Usage: " << argv[0] << " [OPTIONS] [URI]" << std::endl
             << std::endl
             << "OPTIONS:" << std::endl
-            << "    -h, --help           show this help and exit"   << std::endl
-            << "    -v, --verbose        verbose logging to stderr" << std::endl
+            << "    -h or --help                show this help and exit"     << std::endl
+            << "    -t or --thread-limit <n>    limit the number of threads" << std::endl
+            << "    -v or --verbose             verbose logging to stderr"   << std::endl
             << std::endl
             << "Default URI: " << uri_str << std::endl
             << std::endl
@@ -37,21 +40,26 @@ static int main_impl(int argc, char * const argv[]) {
 
     // Options handling
     static const struct option long_opts[] {
-        { "help",       no_argument,    nullptr, 'h' },
-        { "verbose",    no_argument,    nullptr, 'v' },
+        { "help",         no_argument,       nullptr, 'h' },
+        { "thread-limit", required_argument, nullptr, 't' },
+        { "verbose",      no_argument,       nullptr, 'v' },
 
-        { nullptr,      0,              nullptr, '\0' }  // terminator
+        { nullptr,        0,                 nullptr, '\0' }  // terminator
     };
 
     for (;;) {
         int long_opt_ix;
-        int opt = getopt_long(argc, argv, "hv", long_opts, &long_opt_ix);
+        int opt = ::getopt_long(argc, argv, "htv", long_opts, &long_opt_ix);
         if (-1 == opt) break;  // no more options
 
         switch (opt) {
             case 'h':   // help
                 usage(std::cout);
                 return 0;
+
+            case 't':   // thread limit
+                tlimit = ::atoi(::optarg);
+                break;
 
             case 'v':   // verbose logging
                 verbose = true;
@@ -63,12 +71,12 @@ static int main_impl(int argc, char * const argv[]) {
     }
 
     // URI argument
-    if (optind < argc) uri_str = argv[optind++];
+    if (::optind < argc) uri_str = argv[::optind++];
 
     // Unexpected argument
-    if (optind < argc) {
+    if (::optind < argc) {
         std::cerr
-            << "Unexpected argument: " << argv[optind] << std::endl
+            << "Unexpected argument: " << argv[::optind] << std::endl
             << std::endl;
 
         usage(std::cerr);
@@ -81,7 +89,7 @@ static int main_impl(int argc, char * const argv[]) {
         const auto uri = fastcrawl::uri::parse(uri_str);
 
         fastcrawl::download     download(uri, "./index.html");
-        fastcrawl::html_crawler html_crawler(uri.host);
+        fastcrawl::html_crawler html_crawler(uri.host, tlimit);
 
         // Set logging
         download.verbose_log(verbose);
