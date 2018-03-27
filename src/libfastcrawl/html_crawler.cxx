@@ -1,4 +1,6 @@
 #include "html_crawler.hxx"
+#include "adler32.hxx"
+#include "content_size.hxx"
 #include "download.hxx"
 #include "utility.hxx"
 #include "uri.hxx"
@@ -48,12 +50,16 @@ void html_crawler::download(
     auto uri = uri::parse(uri_str);
     if (uri.host.empty()) uri.host = m_host;  // fix relative URIs
 
-    fastcrawl::adler32  a32(record.adler32);
+    // Data processors
+    auto dproc = data_processor(
+        adler32(record.adler32),
+        content_size(record.size));
+
     fastcrawl::download dl(uri, filename_ss.str());
 
     dl.verbose_log(verbose_log());  // set logging
 
-    record.success = dl(a32);  // sub-download with Adler32 checksum
+    record.success = dl(dproc);  // sub-download with Adler32 checksum
 }
 
 
@@ -82,19 +88,46 @@ void html_crawler::process_uri(
 }
 
 
+std::ostream & operator << (
+    std::ostream &                   out,
+    const html_crawler::uri_record & rec)
+{
+    const auto cout_flags = out.flags();
+
+    out << rec.filename
+        << " size: " << std::dec << rec.size
+        << ", Adler32 checksum: "
+        << std::hex << std::setw(8) << std::setfill('0')
+        << rec.adler32;
+
+    out.flags(cout_flags);
+
+    return out;
+}
+
+
 void html_crawler::report() const {
-    const auto cout_flags = std::cout.flags();
+    const uri_record * min_size_rec = nullptr;
+    const uri_record * max_size_rec = nullptr;
 
-    for (auto & uri_record: m_uri_records)
-        std::cout
-            << "URI \"" << uri_record.first
-            << "\" stored in " << uri_record.second.filename
-            << ", Adler32 checksum: "
-            << std::hex << std::setw(8) << std::setfill('0')
-            << uri_record.second.adler32
-            << std::endl;
+    for (auto & uri_record: m_uri_records) {
+        const auto & uri = uri_record.first;
+        const auto & rec = uri_record.second;
 
-    std::cout.flags(cout_flags);
+        std::cout << "URI \"" << uri << "\" stored in " << rec << std::endl;
+
+        if (!min_size_rec || min_size_rec->size > rec.size)
+            min_size_rec = &rec;
+
+        if (!max_size_rec || max_size_rec->size < rec.size)
+            max_size_rec = &rec;
+    }
+
+    if (min_size_rec)
+        std::cout << "Minimal size: " << *min_size_rec << std::endl;
+
+    if (max_size_rec)
+        std::cout << "Maximal size: " << *max_size_rec << std::endl;
 }
 
 

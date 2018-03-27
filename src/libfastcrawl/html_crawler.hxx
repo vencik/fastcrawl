@@ -3,7 +3,6 @@
 
 #include "online_data_processor.hxx"
 #include "thread_pool.hxx"
-#include "adler32.hxx"
 #include "logger.hxx"
 
 #include <unordered_map>
@@ -20,10 +19,12 @@ class html_crawler: public online_data_processor, public logger {
     struct uri_record {
         std::string filename;
         uint32_t    adler32;
+        size_t      size;
         bool        success;
 
         uri_record():
             adler32(0),
+            size(0),
             success(false)
         {}
 
@@ -229,6 +230,10 @@ class html_crawler: public online_data_processor, public logger {
         const std::string & uri_str,
         size_t              line,
         size_t              column);
+
+    friend std::ostream & operator << (
+        std::ostream &     out,
+        const uri_record & rec);
 
 };  // end of class html_crawler
 

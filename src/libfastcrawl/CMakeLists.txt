@@ -4,6 +4,7 @@ add_library(fastcrawl
     thread_pool.cxx
     uri.cxx
     adler32.cxx
+    content_size.cxx
 )
 target_link_libraries(fastcrawl
     LINK_PUBLIC pthread
