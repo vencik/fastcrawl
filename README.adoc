@@ -60,6 +60,7 @@ Dependencis
 After installing the dependencies, the `build.sh` will build the project.
 
 By default, it'll use `./build` building directory.
+
 * `build/fcrawl` is the crawler CLI
 * `build/libfastcrawl` contains the library
 
